@@ -1,152 +1,159 @@
 import java.util.Scanner;
 
 public class CoffeeMachine {
+    private final Scanner scanner;
 
-    public static void printAmount(int water, int milk, int beans, int cups, int money) {
-        System.out.println("The coffee machine has:");
-        System.out.println(water + " of water");
-        System.out.println(milk + " of milk");
-        System.out.println(beans + " of coffee beans");
-        System.out.println(cups + " of disposable cups");
-        System.out.println(money + " of money");
-    }
+    private int water;
+    private int milk;
+    private int beans;
+    private int cups;
+    private int money;
 
-    public static boolean isOutOfResources(int water, int milk, int beans, int cups, String option) {
-        if (cups - 1 < 0) {
-            System.out.println("Sorry, not enough disposable cups!");
-            return true;
-        } else {
-            switch (option) {
-                case "1":
-                    if (water - 250 < 0) {
-                        System.out.println("Sorry, not enough water!");
-                        return true;
-                    }
-                    if (beans - 16 < 0) {
-                        System.out.println("Sorry, not enough coffee beans!");
-                        return true;
-                    }
-                    break;
-                case "2":
-                    if (water - 350 < 0) {
-                        System.out.println("Sorry, not enough water!");
-                        return true;
-                    }
-                    if (milk - 75 < 0) {
-                        System.out.println("Sorry, not enough milk!");
-                        return true;
-                    }
-                    if (beans - 20 < 0) {
-                        System.out.println("Sorry, not enough coffee beans!");
-                        return true;
-                    }
-                    break;
-                case "3":
-                    if (water - 200 < 0) {
-                        System.out.println("Sorry, not enough water!");
-                        return true;
-                    }
-                    if (milk - 100 < 0) {
-                        System.out.println("Sorry, not enough milk!");
-                        return true;
-                    }
-                    if (beans - 12 < 0) {
-                        System.out.println("Sorry, not enough coffee beans!");
-                        return true;
-                    }
-                    break;
-            }
-        }
-        return false;
+    private CoffeeMachine() {
+        this.scanner = new Scanner(System.in);
+        this.water = 400;
+        this.milk = 540;
+        this.beans = 120;
+        this.cups = 9;
+        this.money = 550;
     }
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String action;
-        boolean on = true;
+        CoffeeMachine machine = new CoffeeMachine();
+        boolean status;
+        do {
+            status = machine.processAction();
+        }
+        while (status);
+    }
 
-        int water = 400;
-        int milk = 540;
-        int beans = 120;
-        int cups = 9;
-        int money = 550;
+    public void printState() {
+        System.out.println("The coffee machine has:\n" +
+                String.format("%d of water\n", this.water) +
+                String.format("%d of milk\n", this.milk) +
+                String.format("%d of coffee beans\n", this.beans) +
+                String.format("%d of disposable cups\n", this.cups) +
+                String.format("%d of money", this.money));
+    }
 
-        while (on) {
-            System.out.println("Write action (buy, fill, take, remaining, exit): ");
-            action = scanner.nextLine();
-            System.out.println(action);
+    private void processBuy() {
+        System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - to main menu:");
+        String type = this.scanner.nextLine();
 
-            switch (action) {
-                /* ===== BUY OPTION ==== */
-                case "buy":
-                    System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - to main menu: ");
-                    String buyOption = scanner.nextLine();
+        if (type.equals("back")) return;
 
-                    if (buyOption.equals("1") || buyOption.equals("2") || buyOption.equals("3")) {
-                        if (isOutOfResources(water, milk, beans, cups, buyOption)) {
-                            break;
-                        } else {
-                            System.out.println("I have enough resources, making you a coffee!");
-                        }
-                    }
+        this.buy(Integer.parseInt(type));
+    }
 
-                    switch (buyOption) {
-                        case "1": //espresso
-                            water -= 250;
-                            beans -= 16;
-                            cups--;
-                            money += 4;
-                            break;
-                        case "2": //latte
-                            water -= 350;
-                            milk -= 75;
-                            beans -= 20;
-                            cups--;
-                            money += 7;
-                            break;
-                        case "3": //cappuccino
-                            water -= 200;
-                            milk -= 100;
-                            beans -= 12;
-                            cups--;
-                            money += 6;
-                            break;
-                        case "back":
-                        default:
-                            break;
-                    }
-                    break;
+    private void processFill() {
+        System.out.println("Write how many ml of water do you want to add:");
+        int water = scanner.nextInt();
+        System.out.println("Write how many ml of milk do you want to add:");
+        int milk = scanner.nextInt();
+        System.out.println("Write how many grams of coffee beans do you want to add:");
+        int beans = scanner.nextInt();
+        System.out.println("Write how many disposable cups of coffee do you want to add:");
+        int cups = scanner.nextInt();
 
-                /* ===== FILL OPTION ==== */
-                case "fill":
-                    System.out.println("Write how many ml of water do you want to add: ");
-                    water += scanner.nextInt();
-                    System.out.println("Write how many ml of milk do you want to add: ");
-                    milk += scanner.nextInt();
-                    System.out.println("Write how many grams of coffee beans do you want to add: ");
-                    beans += scanner.nextInt();
-                    System.out.println("Write how many disposable cups of coffee do you want to add: ");
-                    cups += scanner.nextInt();
-                    break;
+        this.fill(water, milk, beans, cups);
 
-                /* ===== TAKE OPTION ==== */
-                case "take":
-                    System.out.println("I gave you $" + money);
-                    money = 0;
-                    break;
+    }
 
-                /* ===== REMAINING OPTION ==== */
-                case "remaining":
-                    printAmount(water, milk, beans, cups, money);
-                    break;
+    private void processTake() {
+        System.out.println(String.format("I gave you $%d", this.money));
+        this.take();
+    }
 
-                /* ===== REMAINING OPTION ==== */
-                case "exit":
-                    on = false;
-                    break;
-                default:
-                    break;
+    private void fill(int water, int milk, int beans, int cups) {
+        this.water += water;
+        this.milk += milk;
+        this.beans += beans;
+        this.cups += cups;
+    }
+
+    private void take() {
+        this.money = 0;
+    }
+
+    private void buy(int type) {
+        int water = 0;
+        int milk = 0;
+        int beans = 0;
+        int money = 0;
+
+        switch (type) {
+            case 1: {
+                water = 250;
+                milk = 0;
+                beans = 16;
+                money = 4;
+                break;
+            }
+            case 2: {
+                water = 350;
+                milk = 75;
+                beans = 20;
+                money = 7;
+                break;
+            }
+            case 3: {
+                water = 200;
+                milk = 100;
+                beans = 12;
+                money = 6;
+                break;
+            }
+            default: {
+                break;
             }
         }
+
+        if (this.water < water) {
+            System.out.println("Sorry, not enough water!");
+        } else if (this.milk < milk) {
+            System.out.println("Sorry, not enough milk!");
+        } else if (this.beans < beans) {
+            System.out.println("Sorry, not enough coffee beans!");
+        } else if (this.cups < 1) {
+            System.out.println("Sorry, not enough disposable cups!");
+        } else {
+            System.out.println("I have enough resources, making you a coffee!");
+            this.water -= water;
+            this.milk -= milk;
+            this.beans -= beans;
+            this.cups--;
+            this.money += money;
+        }
+    }
+
+    public boolean processAction() {
+        System.out.println("Write action (buy, fill, take, remaining, exit):");
+        String action = this.scanner.nextLine();
+
+        switch (action) {
+            case "buy": {
+                this.processBuy();
+                break;
+            }
+            case "fill": {
+                this.processFill();
+                break;
+            }
+            case "take": {
+                this.processTake();
+                break;
+            }
+            case "remaining": {
+                this.printState();
+                break;
+            }
+            case "exit": {
+                return false;
+            }
+            default: {
+                break;
+            }
+        }
+        return true;
     }
 }
